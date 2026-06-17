@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Comment 5</title>
+		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" integrity="sha384-xOolHFLEh07PJGoPkLv1IbcEPTNtaed2xpHsD9ESMhqIYd0nLMwNLD69Npy4HI+N" crossorigin="anonymous">
+		<link rel ="stylesheet" href ="./assets/css/style.css">
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+	</head>
+	<body>
+		<div class="container-fluid mt-5">
+			<div class="row">
+				<div class="col-md-6 offset-md-3">
+					<div class="card">
+						<div class="card-header bg-warning">
+							<h2>Comment Form</h2>
+						</div>
+						<div class="card-body">
+							<form action="" id="commentform">
+								<div class="form-group">
+									<label for="name" class="font-weight-bold">Name*</label>
+									<input type="text" required class="form-control" id="name">
+								</div>
+								<div class="form-group">
+									<label for="email" class="font-weight-bold">Email*</label>
+									<input type="email" required class="form-control" id="email">
+								</div>
+								<div class="form-group">
+									<label for="body" class="font-weight-bold">Comment*</label>
+									<textarea class="form-control" required id="body"></textarea>
+								</div>
+								<div class="form-group">
+									<label for="userId" class="font-weight-bold">UserId*</label>
+									<input type="number" required class="form-control" id="userId">
+								</div>
+								<button class="btn btn-sm btn-block btn-outline-primary" id="AddComment">Add Comment</button>
+								<button type="button" class="d-none btn btn-sm btn-block btn-outline-success" id="UpdateComment">Update Comment</button>
+
+							</form>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="row mt-5">
+				<div class="col-md-10 offset-md-1">
+					<table class="table table-bordered">
+						<thead>
+							<tr>
+								<th>Sr NO.</th>
+								<th>Name</th>
+								<th>Email</th>
+								<th>Comment</th>
+								<th>Edit</th>
+								<th>Delete</th>
+							</tr>
+						</thead>
+						<tbody id="commentContainer">
+							
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+
+		<div class="spinner d-none" id="spinner">
+			<div class="spinner-border text-primary" role="status">
+  				<span class="sr-only">Loading...</span>
+			</div>
+		</div>
+	
+		<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+		<script src="./assets/js/app.js"></script>
+	</body>
+</html>   
