@@ -1,270 +1,256 @@
-
 const cl = console.log;
-const commentform = document.getElementById('commentform')
-const name = document.getElementById('name')
-const email = document.getElementById('email')
-const body = document.getElementById('body')
-const userId = document.getElementById('userId')
-const AddComment = document.getElementById('AddComment')
-const UpdateComment = document.getElementById('UpdateComment')
-const commentContainer = document.getElementById('commentContainer')
-const spinner = document.getElementById('spinner')
 
-
-
-let Base_url = `https://jsonplaceholder.typicode.com/comments`
-
-
-let CommentArr =[]
-
-function snackbar(msg,icon){
-    swal.fire({
-        title : msg,
-        icon : icon,
-        timer : 2000
-    })
-}
-
-
-function fetchcomment(){
-    spinner.classList.remove('d-none')
-
-    let xhr = new XMLHttpRequest()
-
-    xhr.open('GET',Base_url)
-
-    xhr.send(null)
-
-    xhr.onload = function (){
-        if(xhr.status >= 200 && xhr.status <= 299){
-            CommentArr = JSON.parse(xhr.response)
-            CreateComment(CommentArr.reverse())
-        }
-        spinner.classList.add('d-none')
-    }
-}
-
-
-fetchcomment()
-
-
-function CreateComment(arr){
-    let result = ``
-    arr.forEach((ele,i) => {
-        result += `<tr id=${ele.id}>
-					    <td>${arr.length - i}</td>
-					    <td>${ele.name}</td>
-					    <td>${ele.email}</td>
-					    <td>${ele.body}</td>
-				    	<td><i type='button' class="fa-solid fa-pen-to-square fa-2x text-primary" onclick='OnEdit(this)'></i></td>
-					    <td><i type='button' class="fa-solid fa-trash fa-2x text-danger" onclick='Onremove(this)'></i></td>
-				    </tr>`
-    });
-
-    commentContainer.innerHTML =result;
-
-
-}
-
-
-function onsubmit(ele){
-    spinner.classList.remove('d-none')
-
-    ele.preventDefault()
-
-    let newobj ={
-        name :name.value,
-        email : email.value,
-        postId : userId.value,
-        body : body.value
-    }
-
-    CommentArr.unshift(newobj)
-    
-    let xhr = new XMLHttpRequest()
-
-    xhr.open('POST',Base_url)
-
-    xhr.send(JSON.stringify(newobj))
-
-    xhr.onload = function (){
-        if(xhr.status >=200 && xhr.status <= 299){
-            let res = JSON.parse(xhr.response)
-
-            CreateNewComment(newobj,res)
-        }else{
-            snackbar(xhr)
-        }
-
-
-     spinner.classList.add('d-none')
-
-    }
-}
-
-
-
-function CreateNewComment(newobj,res){
-    let tr = document.createElement('tr')
-    tr.id = res.id
-
-    tr.innerHTML = `<td>${CommentArr.length}</td>
-					    <td>${newobj.name}</td>
-					    <td>${newobj.email}</td>
-					    <td>${newobj.body}</td>
-				    	<td><i type='button' class="fa-solid fa-pen-to-square fa-2x text-primary " onclick='OnEdit(this)'></i></td>
-					    <td><i type='button' class="fa-solid fa-trash fa-2x text-danger" onclick='Onremove(this)'></i></td>
-				   `
-    commentContainer.prepend(tr)
-    commentform.reset()
-
-    snackbar(`The New Comment ID ${res.id} is Added Successfully!!`,'success')
-}
-
-
-function OnEdit(ele){
-    spinner.classList.remove('d-none')
-    
-    let editId = ele.closest('tr').id
-
-    localStorage.setItem('EditId',editId)
-
-    let Edit_url = `${Base_url}/${editId}`
-
-    let xhr = new XMLHttpRequest()
-
-    xhr.open('GET',Edit_url)
-
-    xhr.send(null)
-
-    xhr.onload = function (){
-        if(xhr.status >= 200 && xhr.status <= 299){
-            let Editobj = JSON.parse(xhr.response)
-
-            name.value = Editobj.name
-            email.value = Editobj.email
-            body.value = Editobj.body
-            userId.value = Editobj.postId
-
-
-
-            AddComment.classList.add('d-none')
-            UpdateComment.classList.remove('d-none')
-
-            commentform.scrollIntoView({
-             behavior: 'smooth',
-             block: 'start'
-            });
-        }else{
-            snackbar(xhr)
-        }
-        spinner.classList.add('d-none')
-    }
-
-}
-
-function onupdate(){
-    spinner.classList.remove('d-none')
-
-    let updateId = localStorage.getItem('EditId')
-
-    let updateObj = {
-        name :name.value,
-        email : email.value,
-        postId : userId.value,
-        body : body.value,
-        id : updateId
-    }
-
-    let Update_url = `${Base_url}/${updateId}`
-
-    let xhr = new XMLHttpRequest()
-
-    xhr.open('PUT',Update_url)
-
-    xhr.send(JSON.stringify(updateObj))
-
-    xhr.onload = function (){
-        if(xhr.status >= 200 && xhr.status <= 299){
-            let tr = document.getElementById(updateId).children
-
-            tr[1].innerText = updateObj.name
-            tr[2].innerText = updateObj.email
-            tr[3].innerText = updateObj.body
-
-            AddComment.classList.remove('d-none')
-            UpdateComment.classList.add('d-none')
-
-            snackbar(`The Comment Id ${updateId} is Updated Successfully!!`,'success')
-            let row = document.getElementById(updateId)
-            row.scrollIntoView({
-                behavior: 'smooth',
-                block: 'center'
-            });
-
-            row.classList.add('highlight');
-
-            setTimeout(() => {
-                row.classList.remove('highlight');
-            }, 4000);
-
-        }else{
-            snackbar(xhr)
-        }
-
-
-
-        spinner.classList.add('d-none')
-
-    }
-
-
-}
-
-
-function Onremove(ele){
-
-    let removeId = ele.closest('tr').id
-
+// HTML Elements
+const spinner = document.getElementById('spinner');
+const commentContainer = document.getElementById('commentContainer');
+const commentForm = document.getElementById('commentForm');
+const nameControl = document.getElementById('name');
+const emailControl = document.getElementById('email');
+const bodyControl = document.getElementById('body');
+const userIdControl = document.getElementById('userId');
+const addCommentBtn = document.getElementById('addCommentBtn');
+const updateCommentBtn = document.getElementById('updateCommentBtn');
+
+const BASE_URL = `https://jsonplaceholder.typicode.com`;
+const COMMENT_URL = `${BASE_URL}/comments`;
+
+let commentsArr = [];
+let updateId = null;
+
+function snackbar(msg, icon) {
     Swal.fire({
-        title: "Are you sure?",
-        text: "You won't be able to revert this!",
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonColor: "#3085d6",
-        cancelButtonColor: "#d33",
-        confirmButtonText: "Yes, delete it!"
-        }).then((result) => {
-        if (result.isConfirmed){
-            spinner.classList.remove('d-none')
+        title: msg,
+        icon: icon,
+        timer: 3000
+    });
+}
+
+function initTooltips() {
+    $('[data-toggle="tooltip"]').tooltip({
+        boundary: 'window'
+    });
+}
+
+// Show Spinner function
+function showSpinner() {
+    spinner.classList.remove('d-none');
+}
+
+// Hide Spinner function
+function hideSpinner() {
+    spinner.classList.add('d-none');
+}
+
+// 1. Fetch Comments
+function fetchComments() {
+    showSpinner();
+    let xhr = new XMLHttpRequest();
+    xhr.open('GET', COMMENT_URL);
+    xhr.send(null);
+
+    xhr.onload = function () {
+        hideSpinner();
+        if (xhr.status >= 200 && xhr.status <= 299) {
+            let data = JSON.parse(xhr.response);
+            commentsArr = [...data]; 
+            renderCommentCards(commentsArr.slice(0, 15).reverse());
+        } else {
+            snackbar('Error while fetching data!', 'error');
+        }
+    };
+    xhr.onerror = function() {
+        hideSpinner();
+        snackbar('Network Error!', 'error');
+    };
+}
+
+
+function renderCommentCards(arr) {
+    let result = '';
+    arr.forEach(comment => {
+        result += `
+            <div class="col-xl-3 col-md-6 col-12 mb-4" id="comment-${comment.id}">
+                <div class="card comment-card h-100 d-flex flex-column justify-content-between shadow-sm">
+                    <div>
+                        <div class="card-header-bg p-3 text-white text-wrap">
+                            <h4 class="card-title text-capitalize font-weight-bold" data-toggle="tooltip" title="${comment.name}">
+                                ${comment.name}
+                            </h4>
+                            <p class="card-subtitle mb-0 text-white-50 text-truncate">Email: ${comment.email}</p>
+                        </div>
+                        <div class="card-body bg-white text-secondary">
+                            <p class="card-text">${comment.body}</p>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-white d-flex justify-content-between align-items-center border-top p-3">
+                        <button onclick="onEdit('${comment.id}')" class="btn btn-success px-4 py-1 btn-sm rounded">Edit</button>
+                        <button onclick="onRemove('${comment.id}')" class="btn btn-danger px-3 py-1 btn-sm rounded">Remove</button>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+    commentContainer.innerHTML = result;
+    initTooltips();
+}
+
+// 3. Form Submit (POST)
+function onCommentSubmit(eve) {
+    eve.preventDefault();
+
+    let COMMENT_OBJ = {
+        name: nameControl.value,
+        email: emailControl.value,
+        body: bodyControl.value,
+        postId: userIdControl.value
+    };
+
+    showSpinner();
+    let xhr = new XMLHttpRequest();
+    xhr.open('POST', COMMENT_URL);
+    xhr.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
+    xhr.send(JSON.stringify(COMMENT_OBJ));
+
+    xhr.onload = function () {
+        hideSpinner();
+        if (xhr.status >= 200 && xhr.status <= 299) {
+            let res = JSON.parse(xhr.response);
+            
+            res.name = res.name || COMMENT_OBJ.name;
+            res.email = res.email || COMMENT_OBJ.email;
+            res.body = res.body || COMMENT_OBJ.body;
+
+            commentForm.reset();
+
+            let div = document.createElement('div');
+            div.className = 'col-xl-3 col-md-6 col-12 mb-4';
+            div.id = `comment-${res.id}`;
+
+            div.innerHTML = `
+                <div class="card comment-card h-100 d-flex flex-column justify-content-between shadow-sm">
+                    <div>
+                        <div class="card-header-bg p-3 text-white">
+                            <h4 class="card-title text-capitalize font-weight-bold" data-toggle="tooltip" title="${res.name}">
+                                ${res.name}
+                            </h4>
+                            <p class="card-subtitle mb-0 text-white-50 text-truncate">Email: ${res.email}</p>
+                        </div>
+                        <div class="card-body bg-white text-secondary">
+                            <p class="card-text">${res.body}</p>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-white d-flex justify-content-between align-items-center border-top p-3">
+                        <button onclick="onEdit('${res.id}')" class="btn btn-success px-4 py-1 btn-sm rounded">Edit</button>
+                        <button onclick="onRemove('${res.id}')" class="btn btn-danger px-3 py-1 btn-sm rounded">Remove</button>
+                    </div>
+                </div>
+            `;
+            commentContainer.insertBefore(div, commentContainer.firstChild);
+            initTooltips();
+            snackbar(`New comment created successfully!`, 'success');
+        }
+    };
+}
+
+
+function onEdit(id) {
+    updateId = id;
+    let EDIT_URL = `${BASE_URL}/comments/${updateId}`;
+
+    showSpinner();
+    let xhr = new XMLHttpRequest();
+    xhr.open('GET', EDIT_URL);
+    xhr.send(null);
+
+    xhr.onload = function () {
+        hideSpinner();
+        if (xhr.status >= 200 && xhr.status <= 299) {
+            let res = JSON.parse(xhr.response);
+            nameControl.value = res.name;
+            emailControl.value = res.email;
+            bodyControl.value = res.body;
+            userIdControl.value = res.postId || 1;
+
+            addCommentBtn.classList.add('d-none');
+            updateCommentBtn.classList.remove('d-none');
+            
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    };
+}
+
+// 5. Update Action (PATCH)
+function onUpdateComment() {
+    let UPDATE_OBJ = {
+        name: nameControl.value,
+        email: emailControl.value,
+        body: bodyControl.value,
+        postId: userIdControl.value
+    };
+
+    showSpinner();
+    let UPDATE_URL = `${BASE_URL}/comments/${updateId}`;
+
+    let xhr = new XMLHttpRequest();
+    xhr.open('PATCH', UPDATE_URL);
+    xhr.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
+    xhr.send(JSON.stringify(UPDATE_OBJ));
+
+    xhr.onload = function () {
+        hideSpinner();
+        if (xhr.status >= 200 && xhr.status <= 299) {
+            let cardElement = document.getElementById(`comment-${updateId}`);
+            if(cardElement) {
+                cardElement.querySelector('.card-title').innerHTML = UPDATE_OBJ.name;
+                cardElement.querySelector('.card-title').setAttribute('title', UPDATE_OBJ.name);
+                cardElement.querySelector('.card-subtitle').innerHTML = `Email: ${UPDATE_OBJ.email}`;
+                cardElement.querySelector('.card-text').innerHTML = UPDATE_OBJ.body;
                 
-            let remove_Url = `${Base_url}/${removeId}`
-
-
-            let xhr = new XMLHttpRequest()
-
-            xhr.open('DELETE',remove_Url)
-
-            xhr.send(null)
-
-            xhr.onload =function(){
-                if(xhr.status >= 200 && xhr.status <= 299){
-
-                    ele.closest('tr').remove()
-
-                    snackbar(`The Comment Id ${removeId} is Removed Successfully!!!`,'success')
-                    
-                }else{
-                    snackbar(xhr)
-                }
-
-
-            spinner.classList.add('d-none')
-
+                cardElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                cardElement.classList.add('highlight');
+                setTimeout(() => { cardElement.classList.remove('highlight'); }, 3000);
             }
+
+            initTooltips();
+            commentForm.reset();
+
+            updateId = null;
+            addCommentBtn.classList.remove('d-none');
+            updateCommentBtn.classList.add('d-none');
+            snackbar('Comment updated successfully!', 'success');
+        }
+    };
+}
+
+
+function onRemove(id) {
+    Swal.fire({
+        title: 'Are you sure?',
+        text: 'Do you want to remove this comment?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, Remove'
+    }).then(result => {
+        if (result.isConfirmed) {
+            showSpinner();
+            let REMOVE_URL = `${BASE_URL}/comments/${id}`;
+
+            let xhr = new XMLHttpRequest();
+            xhr.open('DELETE', REMOVE_URL);
+            xhr.send(null);
+
+            xhr.onload = function () {
+                hideSpinner();
+                if (xhr.status >= 200 && xhr.status <= 299) {
+                    let cardElement = document.getElementById(`comment-${id}`);
+                    if(cardElement) cardElement.remove();
+                    snackbar('Comment removed successfully!', 'success');
+                }
+            };
         }
     });
+}
 
- }
-commentform.addEventListener('submit',onsubmit)
-UpdateComment.addEventListener('click',onupdate)
+fetchComments();
+commentForm.addEventListener('submit', onCommentSubmit);
+updateCommentBtn.addEventListener('click', onUpdateComment);
